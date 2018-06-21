@@ -49,7 +49,7 @@ public class DocuPlayController {
         return apiClient;
     }
 
-    public String getAccountId(ApiClient apiClient)
+    private String getAccountId(ApiClient apiClient)
     {
         try {
             AuthenticationApi authApi = new AuthenticationApi(apiClient);
@@ -70,7 +70,7 @@ public class DocuPlayController {
         }
     }
 
-    public void createEnvelope(ApiClient docusignClient, String accountId) throws ApiException {
+    private void createEnvelope(ApiClient docusignClient, String accountId) throws ApiException {
 
         // create a byte array that will hold our document bytes
         byte[] fileBytes = null;
