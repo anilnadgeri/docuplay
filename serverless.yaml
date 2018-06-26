@@ -1,0 +1,13 @@
+service: lambda-demo
+
+provider:
+  name: aws
+  runtime: java8
+  timeout: 30 #default 6 seconds
+
+package:
+  artifact: build/libs/docuplay-2.0.0.BUILD-SNAPSHOT-aws.jar
+
+functions:
+  docuplay:
+    handler: com.abc.docuplay.DocuplayHandler

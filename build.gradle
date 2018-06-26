@@ -1,40 +1,101 @@
 buildscript {
-	ext {
-		springBootVersion = '2.0.3.RELEASE'
-	}
-	repositories {
-		mavenCentral()
-	}
-	dependencies {
-		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
-	}
-}
-
-apply plugin: 'java'
-apply plugin: 'eclipse'
-apply plugin: 'org.springframework.boot'
-apply plugin: 'io.spring.dependency-management'
-
-group = 'com.abc'
-version = '0.0.1-SNAPSHOT'
-sourceCompatibility = 1.8
-
-repositories {
-	mavenCentral()
-    maven {
-        url "http://repo.spring.io/plugins-release/"
+    ext {
+        springBootVersion = '2.0.2.RELEASE'
+        wrapperVersion = '1.0.11.RELEASE'
+        shadowVersion = '2.0.1'
+    }
+    repositories {
+        jcenter()
+        mavenLocal()
+        mavenCentral()
+        maven { url "https://repo.spring.io/snapshot" }
+        maven { url "https://repo.spring.io/milestone" }
+        maven { url "https://plugins.gradle.org/m2/" }
+    }
+    dependencies {
+        classpath "com.github.jengelman.gradle.plugins:shadow:${shadowVersion}"
+        classpath("org.springframework.boot.experimental:spring-boot-thin-gradle-plugin:${wrapperVersion}")
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
     }
 }
 
+apply plugin: 'java'
+apply plugin: 'maven'
+apply plugin: 'idea'
+apply plugin: 'com.github.johnrengelman.shadow'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'io.spring.dependency-management'
+//apply plugin: 'org.springframework.boot.experimental.thin-launcher'
+
+group = 'io.spring.sample'
+version = '2.0.0.BUILD-SNAPSHOT'
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+    maven { url "https://repo.spring.io/snapshot" }
+    maven { url "https://repo.spring.io/milestone" }
+}
+
+
+ext {
+    springCloudFunctionVersion = "1.0.0.RELEASE"
+    awsLambdaEventsVersion = "2.1.0"
+    awsLambdaCoreVersion = "1.2.0"
+}
+ext['reactor.version'] = "3.1.7.RELEASE"
+
+assemble.dependsOn = [shadowJar]
+
+jar {
+    manifest {
+        attributes 'Start-Class': 'com.abc.docuplay.DocuplayApplication'
+    }
+}
+
+import com.github.jengelman.gradle.plugins.shadow.transformers.*
+
+
+shadowJar {
+    classifier = 'aws'
+    dependencies {
+        exclude(dependency("org.springframework.cloud:spring-cloud-function-web:${springCloudFunctionVersion}"))
+    }
+    // Required for Spring
+    mergeServiceFiles()
+    append 'META-INF/spring.handlers'
+    append 'META-INF/spring.schemas'
+    append 'META-INF/spring.tooling'
+    transform(PropertiesFileTransformer) {
+        paths = ['META-INF/spring.factories' ]
+        mergeStrategy = "append"
+    }
+}
+
+configurations {
+    testCompile.extendsFrom(compileOnly)
+}
 
 dependencies {
-	compile('org.springframework.boot:spring-boot-starter-web')
-	runtime('org.springframework.boot:spring-boot-devtools')
-	compileOnly('org.projectlombok:lombok')
-	testCompile('org.springframework.boot:spring-boot-starter-test')
-	compile('com.docusign:docusign-esign-java:2.6.1')
-    compileOnly('com.amazonaws:aws-lambda-java-events:2.1.0')
-    compileOnly('com.amazonaws:aws-lambda-java-log4j:1.0.0')
-    compile('org.springframework.cloud:spring-cloud-function-adapter-aws:1.0.0.M1')
+    compile("org.springframework.cloud:spring-cloud-starter-function-web:${springCloudFunctionVersion}")
+    compile("org.springframework.cloud:spring-cloud-function-adapter-aws:${springCloudFunctionVersion}")
+    compile('com.docusign:docusign-esign-java:2.6.1')
+    compile('com.amazonaws:aws-lambda-java-log4j:1.0.0')
 
+    compileOnly("com.amazonaws:aws-lambda-java-events:${awsLambdaEventsVersion}")
+    compileOnly("com.amazonaws:aws-lambda-java-core:${awsLambdaCoreVersion}")
+
+    testCompile('org.springframework.boot:spring-boot-starter-test')
+}
+
+//    compile('org.springframework.boot:spring-boot-starter-web')
+//    runtime('org.springframework.boot:spring-boot-devtools')
+//    compileOnly('org.projectlombok:lombok')
+//    testCompile('org.springframework.boot:spring-boot-starter-test')
+//    compileOnly('com.amazonaws:aws-lambda-java-log4j:1.0.0')
+
+task deploy(type: Exec, dependsOn: 'shadowJar') {
+    commandLine 'serverless', 'deploy'
 }

@@ -1,8 +1,5 @@
 package com.abc.docuplay.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-
 public class EnvelopeResponse {
 
     public String getEnvelopeId() {

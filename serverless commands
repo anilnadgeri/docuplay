@@ -1,0 +1,14 @@
+
+
+sls version
+
+setup AWS
+sls config credentials --provider aws --key AKIAJTFOYFVG7WZF3GCA --secret RU0njMHqIb4xfSUBeuESHraSNNhOkU0od1fZAt3Z
+
+
+example
+sls create --template hello-world --path hello-world
+sls deploy
+sls invoke -f docuplay -p mock.json
+sls logs -f docuplay
+sls invoke local -f docuplay -p mock.json
