@@ -92,7 +92,7 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/lambda-demo/dev/1529974963955-2018-06-26T01:02:43.955Z/docuplay-2.0.0.BUILD-SNAPSHOT-aws.jar"
+          "S3Key": "serverless/lambda-demo/dev/1530014645030-2018-06-26T12:04:05.030Z/docuplay-2.0.0.BUILD-SNAPSHOT-aws.jar"
         },
         "FunctionName": "lambda-demo-dev-docuplay",
         "Handler": "com.abc.docuplay.DocuplayHandler",
@@ -104,21 +104,27 @@
           ]
         },
         "Runtime": "java8",
-        "Timeout": 30
+        "Timeout": 30,
+        "Environment": {
+          "Variables": {
+            "publicIntegratorRSAKey": "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA1YtGlVxCloeAmAGRKU09\noFJGYhjkVHPKwpNIXbVf7I1c7Hn5b0yVp80XIVMCpXl2l2rCuG3NHmZ+eZohNeNl\ne2fN3ZhVmYdmugqlxpd90krr5rXpkdp0zdaIHw7kZu1SrdLjjAaiYinhavVKLP/p\nv6vSqBvXyRmUspQvyCPsV3MqxA72gZD/F5gYZxtpF5eOBBVMSaYRVWPpQuf5GvrZ\n2MVGYL7DR9aVR0+Mkv0J12hMfoPfjB8CenMsRy9cKjfPxwLGnAXmj0bbvKBr56L1\nntFdhAumgZlr9X/D3QzmCPc5rJ8X0lbMjuu+Hh3LBhJHfyII/dkae2I8IZhqHhtv\nYQIDAQAB\n-----END PUBLIC KEY-----\n",
+            "privateIntegratorRSAKey": "-----BEGIN RSA PRIVATE KEY-----\nMIIEogIBAAKCAQEA1YtGlVxCloeAmAGRKU09oFJGYhjkVHPKwpNIXbVf7I1c7Hn5\nb0yVp80XIVMCpXl2l2rCuG3NHmZ+eZohNeNle2fN3ZhVmYdmugqlxpd90krr5rXp\nkdp0zdaIHw7kZu1SrdLjjAaiYinhavVKLP/pv6vSqBvXyRmUspQvyCPsV3MqxA72\ngZD/F5gYZxtpF5eOBBVMSaYRVWPpQuf5GvrZ2MVGYL7DR9aVR0+Mkv0J12hMfoPf\njB8CenMsRy9cKjfPxwLGnAXmj0bbvKBr56L1ntFdhAumgZlr9X/D3QzmCPc5rJ8X\n0lbMjuu+Hh3LBhJHfyII/dkae2I8IZhqHhtvYQIDAQABAoIBADsQGxUrn/U/hDdG\n064PQZjKuNHgHaMoJbAciXr1tBLa5JU5hV6d2ZTAWoHqkkRPbJgjvLjDEeUzJw8e\nLMpZW1O/GccNH7vnoeeaE1DyzKex9j5pGTGwsPbPu/WPKmg3gtM2DZ7IpPguqjzp\nnDsHC1Fqxkid7tid3S1pZC/gk7l5zSJ9SeQpVw6wsMrxmzJlnIeIxHPUrRnF6zqn\nrNSD69HPxIx9CvkgSbhD0PVQYSlrq2Y2DLHTlLKsdouSAx+qJOXSBG7iNs2BAw51\n6Wj843DjFxlCCbq1nSwMo/efCdWw+cE0oOoJRihEYplijyiWdqi+FBZ+RhA5gLTC\nS5HG6eMCgYEA9RNhgtu/q8yg42wpw0Ch5IJk6/lOsKRTtchIRoT20mui6vE49w3d\nQZjFF9wKB69ue0JVt2iV9XjtQudwEy7xhVc6+nOKR3drGjFPqTE5NvwV9c4t8kbt\na6t4jQgK38zrkbIbLYxw5iAG1ELUVMu1jWZP+i2VkO0TCRARYAuh2cMCgYEA3xAU\nTAFYamBbw0KcxEu7JQf1eufvedo5cnsDeDLuuEOG1kYKzSYtSZcW0iocODby1ggR\nOFxcvygTlxQ5TDhjUAXUxd4lAnzRr30GAnGhRvX3H9HQPrj7nS3OWtlX9MhKDyws\nXXqUxJuro8KuuRAXJ1luBSxweABGE7gF7fk3XAsCgYBn+hIL7+mxHP9BndlWIqzN\nA1mIGFz/aqitXkzzxmPlwI79eNx/TN2LgCJWzh9fRVntZ6ZwSyocXHLlSMXvDaKg\nvPKj4bNQQOUq1rMCiITKxEcY46HwwZDndneN9lSOwSVMyjDnsUcRC5N6KORnGYps\ndHUIIqDrPPovhSaqBiVj+wKBgFcyfuyzPe/fmR98Y7HsdMzmDpUsI5Y7s2dIJTQQ\nnPcVFpmeqcxGVz/EO1yOr5deC5GVd73ThUIIlZfihP+Br3jxvppW25rcVk/GjNnZ\nt5T4w9EBgOl0AJAR/u/OtK5wuVqzBujH6W3t+Ku8h/a6DoMIV5TYKWMPoFVHA7Ji\nULy/AoGASNLkPW4v3xf5R/U+EKg1tbN4r74aD2d5IQV7Ae86fHUiBRJOVpxXlM3N\nlpv0TzCHamv2QCjh2h37rVHMkjm9JlSul6BD/vsCSt1RsOQK3FFBubFI3KZ1Sp2Y\nYkoTgKhG+0n5zp2GrDmYJeNdRNmIF0npQY9qhIiAQWVIW2EzEbg=\n-----END RSA PRIVATE KEY-----\n"
+          }
+        }
       },
       "DependsOn": [
         "DocuplayLogGroup",
         "IamRoleLambdaExecution"
       ]
     },
-    "DocuplayLambdaVersionXlhPbXMZGiCPw73iZ5SpNLJLUjG9CNCoTOq2pcU": {
+    "DocuplayLambdaVersionOF86OcCCaJTWENn6eQbojEXgTzHSeqCKvjl24X43R2A": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "DocuplayLambdaFunction"
         },
-        "CodeSha256": "G2jlHYYCFVE+kkSdGynl4u4JxE3AZ5lDBBFAE9z33B8="
+        "CodeSha256": "4LqbrPiThw+afj1NcbA8uqB1IJ64G/CiFCC+mxWvCdk="
       }
     }
   },
@@ -131,7 +137,7 @@
     "DocuplayLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "DocuplayLambdaVersionXlhPbXMZGiCPw73iZ5SpNLJLUjG9CNCoTOq2pcU"
+        "Ref": "DocuplayLambdaVersionOF86OcCCaJTWENn6eQbojEXgTzHSeqCKvjl24X43R2A"
       }
     }
   }

@@ -83,7 +83,7 @@ dependencies {
     compile("org.springframework.cloud:spring-cloud-function-adapter-aws:${springCloudFunctionVersion}")
     compile('com.docusign:docusign-esign-java:2.6.1')
     compile('com.amazonaws:aws-lambda-java-log4j:1.0.0')
-
+    compile('com.google.guava:guava:23.5-jre')
     compileOnly("com.amazonaws:aws-lambda-java-events:${awsLambdaEventsVersion}")
     compileOnly("com.amazonaws:aws-lambda-java-core:${awsLambdaCoreVersion}")
 

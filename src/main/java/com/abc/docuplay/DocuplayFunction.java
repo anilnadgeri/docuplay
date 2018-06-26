@@ -13,11 +13,18 @@ public class DocuplayFunction implements Function<EnvelopeRequest, EnvelopeRespo
 
     private static final Logger LOG = Logger.getLogger(DocuplayFunction.class);
 
+    private final DocusignService docusignService;
+
+    public DocuplayFunction(DocusignService docusignService) {
+        this.docusignService = docusignService;
+    }
+
     @Override
     public EnvelopeResponse apply(EnvelopeRequest envelopeRequest) {
-        EnvelopeResponse res = new EnvelopeResponse();
         LOG.info("received request : " + envelopeRequest.getSigner());
-        res.setEnvelopeId("id:" + new Random().nextInt() + envelopeRequest.getSigner());
-        return res;
+
+        String envelopeId = docusignService.sendDocuments();
+
+        return new EnvelopeResponse(envelopeId);
     }
 }
