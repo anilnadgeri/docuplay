@@ -1,9 +1,7 @@
-
-
 sls version
 
 setup AWS
-sls config credentials --provider aws --key AKIAJTFOYFVG7WZF3GCA --secret RU0njMHqIb4xfSUBeuESHraSNNhOkU0od1fZAt3Z
+sls config credentials --provider aws --key yourkey --secret yoursecret
 
 
 example
