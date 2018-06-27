@@ -12,5 +12,5 @@ functions:
   docuplay:
     handler: com.abc.docuplay.DocuplayHandler
     environment:
-      publicIntegratorRSAKey: ${file(./keys.yaml):publicIntegratorRSAKey}
-      privateIntegratorRSAKey: ${file(./keys.yaml):privateIntegratorRSAKey}
+      publicIntegratorRSAKey: ${file(./config/keys.yaml):publicIntegratorRSAKey}
+      privateIntegratorRSAKey: ${file(./config/keys.yaml):privateIntegratorRSAKey}

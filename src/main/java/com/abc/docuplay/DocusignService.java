@@ -13,25 +13,23 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.util.io.pem.PemReader;
 import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StreamUtils;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.io.StringReader;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.security.KeyFactory;
 import java.security.Security;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
-import java.util.ArrayList;
-import java.util.Base64;
+import java.util.*;
 import java.util.Date;
 import java.util.List;
 
@@ -56,20 +54,6 @@ class Token{
     }
 }
 
-class AuthRequest {
-    private String grantType;
-    private String assertion;
-
-    public AuthRequest(){
-
-    }
-
-    public AuthRequest(String grantType, String assertion) {
-        this.grantType = grantType;
-        this.assertion = assertion;
-    }
-}
-
 @Service
 public class DocusignService {
     private static final Logger LOG = Logger.getLogger(DocuplayFunction.class);
@@ -80,7 +64,6 @@ public class DocusignService {
         this.restTemplate = restTemplateBuilder.build();
     }
 
-
     public String sendDocuments(){
         ApiClient docusignClient = initializeApiClient();
         return createEnvelope(docusignClient).getEnvelopeId();
@@ -89,7 +72,7 @@ public class DocusignService {
     private ApiClient initializeApiClient()  {
         String jwtoken = generateJWToken();
         Token token = getAccessToken(jwtoken);
-        LOG.info("**** token received : " + token.getAccessToken());
+        LOG.info("access token received from Docusign : " + token.getAccessToken());
         ApiClient apiClient = new ApiClient(Config.BASE_URL);
         apiClient.setAccessToken(token.getAccessToken(), System.currentTimeMillis() + token.getExpiresIn());
         return apiClient;
@@ -169,72 +152,41 @@ public class DocusignService {
             // below code required for production (no effect in demo since all accounts on same domain)
             apiClient.setBasePath(accountDomain[0]);
             Configuration.setDefaultApiClient(apiClient);
-            System.out.println("Configuring api client with following base URI: " + accountDomain[0]);
             return accountId;
         }
         catch(Exception ex) {
-            System.out.println("Error: " + ex);
-            return null;
+            LOG.error("Error while getting account id: " + ex);
+            throw new RuntimeException(ex);
         }
     }
 
     private EnvelopeSummary createEnvelope(ApiClient docusignClient){
-        String accountId = getAccountId(docusignClient);
-
-        // create a byte array that will hold our document bytes
-        byte[] fileBytes = null;
-
-        String pathToDocument = "/sample.pdf";
-
+        EnvelopeDefinition envDef = createEnvelopeDefinition();
         try
         {
-            String currentDir = System.getProperty("user.dir");
-
-            // read file from a local directory
-            Path path = Paths.get(currentDir + pathToDocument);
-            fileBytes = Files.readAllBytes(path);
+            EnvelopesApi envelopesApi = new EnvelopesApi(docusignClient);
+            String accountId = getAccountId(docusignClient);
+            EnvelopeSummary envelopeSummary = envelopesApi.createEnvelope(accountId, envDef);
+            LOG.info("EnvelopeSummary: " + envelopeSummary);
+            return envelopeSummary;
         }
-        catch (IOException ioExcp)
-        {
-            LOG.error("Error while reading file " + ioExcp.getMessage());
-            throw  new RuntimeException(ioExcp);
+        catch (com.docusign.esign.client.ApiException ex){
+            LOG.error("Exception: " + ex);
+            throw new RuntimeException(ex);
         }
+    }
 
+    private EnvelopeDefinition createEnvelopeDefinition() {
         // create an envelope that will store the document(s), field(s), and recipient(s)
         EnvelopeDefinition envDef = new EnvelopeDefinition();
-        envDef.setEmailSubject("Please sign this document sent from Java SDK)");
+        envDef.setEmailSubject("Please sign this document sent from Test");
 
-        // add a document to the envelope
-        Document doc = new Document();
-        String base64Doc = Base64.getEncoder().encodeToString(fileBytes);
-        doc.setDocumentBase64(base64Doc);
-        doc.setName("TestFile"); // can be different from actual file name
-        doc.setFileExtension(".pdf");	// update if different extension!
-        doc.setDocumentId("1");
+        Document document = createDocusignDocument();
+        envDef.setDocuments(Arrays.asList(document));
 
-        List<Document> docs = new ArrayList<Document>();
-        docs.add(doc);
-        envDef.setDocuments(docs);
-
-        // add a recipient to sign the document, identified by name and email we used above
-        Signer signer = new Signer();
-        signer.setEmail("anilnadgeri@gmail.com");
-        signer.setName("Anil Nadgeri");
-        signer.setRecipientId("1");
-
-        // create a |signHere| tab somewhere on the document for the signer to sign
-        // here we arbitrarily place it 100 pixels right, 150 pixels down from top
-        // left corner of first page of first envelope document
-        SignHere signHere = new SignHere();
-        signHere.setDocumentId("1");
-        signHere.setPageNumber("1");
-        signHere.setRecipientId("1");
-        signHere.setXPosition("100");
-        signHere.setYPosition("150");
-
-        // can have multiple tabs, so need to add to envelope as a single element list
-        List<SignHere> signHereTabs = new ArrayList<SignHere>();
-        signHereTabs.add(signHere);
+        Signer signer = createSigner(document);
+        SignHere signHere = createSignhereTab(signer, document);
+        List<SignHere> signHereTabs = Arrays.asList(signHere);
         Tabs tabs = new Tabs();
         tabs.setSignHereTabs(signHereTabs);
         signer.setTabs(tabs);
@@ -247,21 +199,49 @@ public class DocusignService {
         // send the envelope by setting |status| to "sent". To save as a draft set to "created" instead
         envDef.setStatus("sent");
 
-        try
-        {
-            // instantiate a new EnvelopesApi object
-            EnvelopesApi envelopesApi = new EnvelopesApi(docusignClient);
-            // call the createEnvelope() API
-            EnvelopeSummary envelopeSummary = envelopesApi.createEnvelope(accountId, envDef);
-            System.out.println("Envelope has been sent to " + signer.getEmail());
-            System.out.println("EnvelopeSummary: " + envelopeSummary);
-            return envelopeSummary;
-        }
-        catch (com.docusign.esign.client.ApiException ex)
-        {
-            LOG.error("Exception: " + ex);
-            throw new RuntimeException(ex);
-        }
+        return envDef;
     }
 
+    private SignHere createSignhereTab(Signer signer, Document document) {
+        // create a |signHere| tab somewhere on the document for the signer to sign
+        // here we arbitrarily place it 100 pixels right, 150 pixels down from top
+        // left corner of first page of first envelope document
+        SignHere signHere = new SignHere();
+        signHere.setDocumentId(document.getDocumentId());
+        signHere.setPageNumber("1");
+        signHere.setRecipientId(signer.getRecipientId());
+        signHere.setXPosition("100");
+        signHere.setYPosition("150");
+        return signHere;
+    }
+
+    private Signer createSigner(Document document) {
+        // add a recipient to sign the document, identified by name and email we used above
+        Signer signer = new Signer();
+        signer.setEmail("anilnadgeri@gmail.com");
+        signer.setName("Anil Nadgeri");
+        signer.setRecipientId(document.getDocumentId());
+        return signer;
+    }
+
+    private Document createDocusignDocument() {
+        Document doc = new Document();
+        doc.setDocumentBase64(getDocumentContent());
+        doc.setName("TestFile"); // can be different from actual file name
+        doc.setFileExtension(".pdf");
+        doc.setDocumentId("1");
+        return doc;
+    }
+
+    private String getDocumentContent() {
+        try{
+            ClassPathResource resource = new ClassPathResource("sample.pdf");
+            byte[] fileBytes = StreamUtils.copyToByteArray(resource.getInputStream());
+            return Base64.getEncoder().encodeToString(fileBytes);
+        }
+        catch (IOException ioExcp){
+            LOG.error("Error while reading file " + ioExcp.getMessage());
+            throw  new RuntimeException(ioExcp);
+        }
+    }
 }

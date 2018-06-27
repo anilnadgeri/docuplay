@@ -92,7 +92,7 @@
           "S3Bucket": {
             "Ref": "ServerlessDeploymentBucket"
           },
-          "S3Key": "serverless/lambda-demo/dev/1530014645030-2018-06-26T12:04:05.030Z/docuplay-2.0.0.BUILD-SNAPSHOT-aws.jar"
+          "S3Key": "serverless/lambda-demo/dev/1530065464743-2018-06-27T02:11:04.743Z/docuplay-2.0.0.BUILD-SNAPSHOT-aws.jar"
         },
         "FunctionName": "lambda-demo-dev-docuplay",
         "Handler": "com.abc.docuplay.DocuplayHandler",
@@ -117,14 +117,14 @@
         "IamRoleLambdaExecution"
       ]
     },
-    "DocuplayLambdaVersionOF86OcCCaJTWENn6eQbojEXgTzHSeqCKvjl24X43R2A": {
+    "DocuplayLambdaVersionAzIHtGILODOf5cDWUAhwvpKwSSimfxaddKn0wCFSCY": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "DocuplayLambdaFunction"
         },
-        "CodeSha256": "4LqbrPiThw+afj1NcbA8uqB1IJ64G/CiFCC+mxWvCdk="
+        "CodeSha256": "dt1gYiRkuZ0rHYSbBalnO5ExcnkFgDb/XHlIITMGUUw="
       }
     }
   },
@@ -137,7 +137,7 @@
     "DocuplayLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "DocuplayLambdaVersionOF86OcCCaJTWENn6eQbojEXgTzHSeqCKvjl24X43R2A"
+        "Ref": "DocuplayLambdaVersionAzIHtGILODOf5cDWUAhwvpKwSSimfxaddKn0wCFSCY"
       }
     }
   }

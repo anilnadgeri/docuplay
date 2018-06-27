@@ -29,3 +29,7 @@
 /gradle/
 private.key
 public.key
+
+.serverless
+
+.DS_Store
