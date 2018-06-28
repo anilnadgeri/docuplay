@@ -1,15 +1,14 @@
 package com.abc.docuplay.model;
 
 public class EnvelopeRequest {
+
+    EnvelopeRequest(String signer) {
+        this.signer = signer;
+    }
+
     public String getSigner() {
         return signer;
     }
 
-    public void setSigner(String signer) {
-        this.signer = signer;
-    }
-
     private String signer;
-
-
 }

@@ -16,7 +16,6 @@ import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StreamUtils;
 import org.springframework.web.client.RestTemplate;
@@ -32,6 +31,9 @@ import java.security.spec.X509EncodedKeySpec;
 import java.util.*;
 import java.util.Date;
 import java.util.List;
+
+import static com.abc.docuplay.Config.*;
+import static org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED;
 
 class Token{
     @JsonProperty("access_token")
@@ -59,9 +61,16 @@ public class DocusignService {
     private static final Logger LOG = Logger.getLogger(DocuplayFunction.class);
 
     private final RestTemplate restTemplate;
+    private final ApiClient apiClient;
+    private final AuthenticationApi authenticationApi;
+    private final EnvelopesApi envelopesApi;
 
-    public DocusignService(RestTemplateBuilder restTemplateBuilder) {
+
+    public DocusignService(RestTemplateBuilder restTemplateBuilder, ApiClient apiClient, AuthenticationApi authenticationApi, EnvelopesApi envelopesApi) {
         this.restTemplate = restTemplateBuilder.build();
+        this.apiClient = apiClient;
+        this.authenticationApi = authenticationApi;
+        this.envelopesApi = envelopesApi;
     }
 
     public String sendDocuments(){
@@ -73,7 +82,6 @@ public class DocusignService {
         String jwtoken = generateJWToken();
         Token token = getAccessToken(jwtoken);
         LOG.info("access token received from Docusign : " + token.getAccessToken());
-        ApiClient apiClient = new ApiClient(Config.BASE_URL);
         apiClient.setAccessToken(token.getAccessToken(), System.currentTimeMillis() + token.getExpiresIn());
         return apiClient;
     }
@@ -81,10 +89,10 @@ public class DocusignService {
     private Token getAccessToken(String jwtoken) {
         try {
             HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+            headers.setContentType(APPLICATION_FORM_URLENCODED);
 
             HttpEntity request = new HttpEntity<Object>(ImmutableMap.of("grant_type", "urn:ietf:params:oauth:grant-type:jwt-bearer", "assertion", jwtoken));
-            return restTemplate.postForObject("https://" + Config.O_AUTH_BASE_URL + Config.O_AUTH_ENDPOINT, request, Token.class);
+            return restTemplate.postForObject("https://" + O_AUTH_BASE_URL + O_AUTH_ENDPOINT, request, Token.class);
 
         }catch (Exception e){
             LOG.error("Error while authenticating " + e.getMessage());
@@ -95,16 +103,16 @@ public class DocusignService {
 
     private String generateJWToken(){
         Date issueTime = new Date();
-        Algorithm algorithm = Algorithm.RSA256(toPublicKey(Config.PUBLIC_INTEGRATOR_RSA_KEY),
-                toPrivateKey(Config.PRIVATE_INTEGRATOR_RSA_KEY));
+        Algorithm algorithm = Algorithm.RSA256(toPublicKey(PUBLIC_INTEGRATOR_RSA_KEY),
+                toPrivateKey(PRIVATE_INTEGRATOR_RSA_KEY));
         String scope = "signature impersonation";
 
         return JWT.create()
                 .withIssuer(Config.INTEGRATOR_KEY)
                 .withSubject(Config.IMPERSONATED_USER)
-                .withAudience(Config.O_AUTH_BASE_URL)
+                .withAudience(O_AUTH_BASE_URL)
                 .withIssuedAt(issueTime)
-                .withExpiresAt(new Date(issueTime.getTime() + Config.EXPIRY_IN_SECONDS*1000))
+                .withExpiresAt(new Date(issueTime.getTime() + EXPIRY_IN_SECONDS*1000))
                 .withClaim("scope", scope)
                 .sign(algorithm);
     }
@@ -143,11 +151,11 @@ public class DocusignService {
     private String getAccountId(ApiClient apiClient)
     {
         try {
-            AuthenticationApi authApi = new AuthenticationApi(apiClient);
-            LoginInformation loginInfo = authApi.login();
+            LoginInformation loginInfo = authenticationApi.login();
             // that note user might belong to multiple accounts, here we get first
-            String accountId = loginInfo.getLoginAccounts().get(0).getAccountId();
-            String baseUrl = loginInfo.getLoginAccounts().get(0).getBaseUrl();
+            LoginAccount loginAccount = loginInfo.getLoginAccounts().get(0);
+            String accountId = loginAccount.getAccountId();
+            String baseUrl = loginAccount.getBaseUrl();
             String[] accountDomain = baseUrl.split("/v2");
             // below code required for production (no effect in demo since all accounts on same domain)
             apiClient.setBasePath(accountDomain[0]);
@@ -164,7 +172,6 @@ public class DocusignService {
         EnvelopeDefinition envDef = createEnvelopeDefinition();
         try
         {
-            EnvelopesApi envelopesApi = new EnvelopesApi(docusignClient);
             String accountId = getAccountId(docusignClient);
             EnvelopeSummary envelopeSummary = envelopesApi.createEnvelope(accountId, envDef);
             LOG.info("EnvelopeSummary: " + envelopeSummary);
